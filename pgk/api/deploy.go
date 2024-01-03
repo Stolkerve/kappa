@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Stolkerve/kappa/pgk/db"
 	"github.com/Stolkerve/kappa/pgk/storage"
@@ -14,20 +15,9 @@ import (
 
 func DeployRoutes(r chi.Router) http.Handler {
 	r.Post("/deploy", func(w http.ResponseWriter, r *http.Request) {
-		contentLength, err := strconv.ParseUint(r.Header.Get("content-length"), 10, 64)
-		if err != nil {
-			w.WriteHeader(http.StatusLengthRequired)
-			return
-		}
-
-		if contentLength > 1_048_576*5 {
-			w.WriteHeader(http.StatusInsufficientStorage)
-			return
-		}
-
-		functionWasmFile, _, err := r.FormFile("function")
+		functionWasmFile, functionWasmFileMetadata, err := r.FormFile("function")
 		defer functionWasmFile.Close()
-		if err != nil {
+		if err != nil || functionWasmFileMetadata.Size > 1_048_576*5 || !strings.HasSuffix(functionWasmFileMetadata.Filename, ".wasm") {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
