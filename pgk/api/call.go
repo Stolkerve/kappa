@@ -67,8 +67,8 @@ func CallRoutes(r chi.Router) {
 
 	})
 
-	r.Get("/calls/{functionID}/{offset:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		offset, err := strconv.ParseUint(chi.URLParam(r, "offset"), 10, 32)
+	r.Get("/calls/{id}/{page:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		page, err := strconv.ParseUint(chi.URLParam(r, "page"), 10, 32)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -76,7 +76,7 @@ func CallRoutes(r chi.Router) {
 
 		var calls []storage.Call
 
-		if err := db.DB.Where("function_id = ?", chi.URLParam(r, "functionID")).Find(&calls).Limit(50).Offset(int(offset)).Error; err != nil {
+		if err := db.DB.Where("function_id = ?", chi.URLParam(r, "id")).Find(&calls).Limit(50).Offset(int(page) * 50).Error; err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

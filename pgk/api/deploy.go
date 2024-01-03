@@ -52,15 +52,15 @@ func DeployRoutes(r chi.Router) http.Handler {
 
 	})
 
-	r.Get("/deploys/{offset:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		offset, err := strconv.ParseUint(chi.URLParam(r, "offset"), 10, 32)
+	r.Get("/deploys/{page:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		page, err := strconv.ParseUint(chi.URLParam(r, "page"), 10, 32)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		var ids []string
-		if err := db.DB.Raw("SELECT id FROM functions lIMIT 50 OFFSET ?", offset).Scan(&ids).Error; err != nil {
+		if err := db.DB.Raw("SELECT id FROM functions lIMIT 50 OFFSET ?", page*50).Scan(&ids).Error; err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
